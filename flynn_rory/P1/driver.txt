@@ -1,0 +1,58 @@
+# Author: Rory Flynn, sinned: 10/06/2019
+
+from pyspark import SparkContext
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+sc = SparkContext()
+
+##
+## PART 1
+##
+from part1 import kmeans, plot_cost
+
+
+#### var #### declaration #### start #### var #### declaration #### start #### var #### declaration #### start ####
+
+# determines the number of iterations
+Iterations = 20
+# this is the absolute path to the dataset file
+dataset_path = './data.txt'
+# this contains the absolute path the centroid file that being use (either c1.txt or c2.txt)
+centroids_path = './c1.txt'
+# centroids_path = './c2.txt'
+# or False
+euclidean_distance = True
+
+# data and centroids to rdd. data needed more than defalt slices on my system
+data = sc.parallelize(np.genfromtxt(dataset_path), numSlices=30)
+centroids = sc.parallelize(np.genfromtxt(centroids_path))
+
+# Do the k means operation for c1
+cost_euclid_c1 = kmeans(data, centroids, Iterations, euclidean_distance)
+cost_manhat_c1 = kmeans(data, centroids, Iterations, False)
+
+# Do the k means operation for c2
+centroids_path = './c2.txt'
+centroids = sc.parallelize(np.genfromtxt(centroids_path))
+cost_euclid_c2 = kmeans(data, centroids, Iterations, euclidean_distance)
+cost_manhat_c2 = kmeans(data, centroids, Iterations, False)
+
+# Save work
+np.save("m-e_c-1", cost_euclid_c1)
+np.save("m-m_c-1", cost_manhat_c1)
+np.save("m-e_c-2", cost_euclid_c2)
+np.save("m-m_c-2", cost_manhat_c2)
+
+#load work
+cost_euclid_c1 = np.load("m-e_c-1.npy")
+cost_manhat_c1 = np.load("m-m_c-1.npy")
+cost_euclid_c2 = np.load("m-e_c-2.npy")
+cost_manhat_c2 = np.load("m-m_c-2.npy")
+
+plot_cost(cost_euclid_c1, cost_euclid_c2, "Euclidean")
+plot_cost(cost_manhat_c1, cost_manhat_c2, "Manhatan")
+
+
+
